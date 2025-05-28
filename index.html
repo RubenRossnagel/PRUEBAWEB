@@ -89,6 +89,88 @@
             </div>
         </div>
     </div>
-    <script src="app.js"></script>
+    <script src="api.js"></script>
+<script>
+    // Función para actualizar el estado de la API
+    function updateDiagnostic(id, status, message) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = message;
+            element.className = status === 'success' ? 'success' : 'error';
+        }
+    }
+
+    // Función para cargar productos
+    async function loadProducts() {
+        try {
+            const searchInput = document.getElementById('searchInput').value.trim();
+            const familiaFilter = document.getElementById('familiaFilter').value;
+            
+            // Obtener productos
+            const products = await getProducts();
+            
+            // Filtrar productos
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = product.descripcionLarga.toLowerCase().includes(searchInput.toLowerCase());
+                const matchesFamilia = !familiaFilter || product.FamiliaID === parseInt(familiaFilter);
+                return matchesSearch && matchesFamilia;
+            });
+            
+            // Actualizar tabla
+            const tableBody = document.getElementById('productTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                filteredProducts.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.codigo}</td>
+                        <td>${product.descripcionLarga}</td>
+                        <td>${product.precio}</td>
+                        <td>${product.FamiliaID}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            updateDiagnostic('apiStatus', 'success', 'Conexión exitosa');
+            updateDiagnostic('tokenStatus', 'success', 'Token válido');
+            updateDiagnostic('lastError', 'success', '-');
+            
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+            updateDiagnostic('apiStatus', 'error', 'Error de conexión');
+            updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+            updateDiagnostic('lastError', 'error', error.message);
+        }
+    }
+
+    // Función para cargar familias
+    async function loadFamilias() {
+        try {
+            const familias = await getFamilias();
+            const select = document.getElementById('familiaFilter');
+            if (select) {
+                select.innerHTML = '<option value="">Todas las familias</option>';
+                familias.forEach(familia => {
+                    const option = document.createElement('option');
+                    option.value = familia.id;
+                    option.textContent = familia.nombre;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error al cargar familias:', error);
+        }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+        loadFamilias();
+        
+        document.getElementById('searchInput')?.addEventListener('input', loadProducts);
+        document.getElementById('familiaFilter')?.addEventListener('change', loadProducts);
+    });
+</script>
 </body>
 </html>
