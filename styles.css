@@ -40,6 +40,20 @@ h1 {
     min-width: 300px;
 }
 
+.search-button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover {
+    background-color: #1557b0;
+}
+
 .products-list {
     margin-bottom: 2rem;
 }

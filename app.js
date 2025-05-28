@@ -40,10 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             familiaSelect.appendChild(option);
         });
 
-        // Cargar productos
-        await loadProducts();
-
         // Event listeners
+        document.getElementById('searchButton').addEventListener('click', loadProducts);
         document.getElementById('searchInput').addEventListener('input', debounce(loadProducts, 300));
         document.getElementById('familiaFilter').addEventListener('change', loadProducts);
 
@@ -54,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showProductDetails(row.dataset.productid);
             }
         });
+
+        // Cargar productos por primera vez
+        await loadProducts();
 
     } catch (error) {
         console.error('Error al cargar la aplicación:', error);
