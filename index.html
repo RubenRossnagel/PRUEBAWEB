@@ -56,31 +56,29 @@
 
         <!-- Filtros -->
         <div class="filters">
-            <input type="text" id="searchInput" placeholder="Buscar producto...">
-            <button id="searchButton" class="search-button">Buscar</button>
+            <input type="text" id="searchInput" placeholder="Buscar productos...">
             <select id="familiaFilter">
                 <option value="">Todas las familias</option>
             </select>
+            <button class="search-button" onclick="loadProducts()">Buscar</button>
         </div>
 
         <!-- Mensaje de carga -->
         <div id="loading" style="display: none;"></div>
 
-        <!-- Lista de productos -->
-        <div class="products-list">
-            <table>
+        <!-- Tabla de productos -->
+        <div class="table-container">
+            <table id="productsTable">
                 <thead>
                     <tr>
                         <th>Código</th>
                         <th>Descripción</th>
-                        <th>Stock</th>
-                        <th>Código de Barras</th>
                         <th>Precio</th>
-                        <th>Fecha</th>
+                        <th>Familia</th>
+                        <th>Paso</th>
                     </tr>
                 </thead>
-                <tbody id="productsTableBody">
-                </tbody>
+                <tbody id="productsTableBody"></tbody>
             </table>
         </div>
 
@@ -89,10 +87,16 @@
             <h3>Diagnóstico de la Conexión</h3>
             <div class="diagnostic-panel">
                 <p><strong>Diagnóstico de la Conexión</strong></p>
-                <p>Estado de la API: <span id="apiStatus" class="status">Conectando con la API...</span></p>
-                <p>Token: <span id="tokenStatus" class="status">Verificando...</span></p>
+                <p>Estado de la API: <span id="apiStatus" class="status">Paso 1: Inicializando...</span></p>
+                <p>Token: <span id="tokenStatus" class="status">Paso 2: Verificando...</span></p>
                 <p>Último Error: <span id="lastError" class="status">-</span></p>
-                <div id="loadingMessage" class="loading-message">Cargando datos...</div>
+                <div id="loadingMessage" class="loading-message">Paso 3: Cargando datos...</div>
+                <div id="stepIndicator" class="step-indicator">
+                    <div class="step active">1. Inicialización</div>
+                    <div class="step">2. Verificación de token</div>
+                    <div class="step">3. Carga de datos</div>
+                    <div class="step">4. Filtrado</div>
+                </div>
             </div>
         </div>
 
@@ -138,44 +142,67 @@
         }
     }
 
+    // Función para actualizar el paso
+    function updateStep(step, message) {
+        const stepIndicator = document.getElementById('stepIndicator');
+        if (stepIndicator) {
+            const steps = stepIndicator.children;
+            for (let i = 0; i < steps.length; i++) {
+                steps[i].className = i < step ? 'step done' : 'step';
+            }
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.textContent = message;
+            }
+        }
+    }
+
     // Función para cargar productos
     async function loadProducts() {
         try {
+            // Paso 1: Obtener datos de entrada
             const searchInput = document.getElementById('searchInput').value.trim();
             const familiaFilter = document.getElementById('familiaFilter').value;
             
-            // Obtener productos
+            // Paso 2: Obtener productos
+            updateStep(2, 'Obteniendo productos...');
             const products = await getProducts();
             
-            // Filtrar productos
+            // Paso 3: Filtrar productos
+            updateStep(3, 'Filtrando productos...');
             const filteredProducts = products.filter(product => {
                 const matchesSearch = product.descripcionLarga.toLowerCase().includes(searchInput.toLowerCase());
                 const matchesFamilia = !familiaFilter || product.FamiliaID === parseInt(familiaFilter);
                 return matchesSearch && matchesFamilia;
             });
             
-            // Actualizar tabla
-            const tableBody = document.getElementById('productTableBody');
+            // Paso 4: Actualizar tabla
+            updateStep(4, 'Actualizando tabla...');
+            const tableBody = document.getElementById('productsTableBody');
             if (tableBody) {
                 tableBody.innerHTML = '';
-                filteredProducts.forEach(product => {
+                filteredProducts.forEach((product, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${product.codigo}</td>
                         <td>${product.descripcionLarga}</td>
                         <td>${product.precio}</td>
                         <td>${product.FamiliaID}</td>
+                        <td>Paso ${index + 1}</td>
                     `;
                     tableBody.appendChild(row);
                 });
             }
             
+            // Paso 5: Completado
+            updateStep(5, 'Proceso completado');
             updateDiagnostic('apiStatus', 'success', 'Conexión exitosa');
             updateDiagnostic('tokenStatus', 'success', 'Token válido');
             updateDiagnostic('lastError', 'success', '-');
             
         } catch (error) {
             console.error('Error al cargar productos:', error);
+            updateStep(5, 'Error en el proceso');
             updateDiagnostic('apiStatus', 'error', 'Error de conexión');
             updateDiagnostic('tokenStatus', 'error', 'Token no válido');
             updateDiagnostic('lastError', 'error', error.message);
