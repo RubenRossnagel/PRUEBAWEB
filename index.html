@@ -3,15 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Aplicación Web</title>
+    <title>Visualizador de Productos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Bienvenido a mi Aplicación Web</h1>
-        <div class="content">
-            <button id="saludarBtn">¡Saludar!</button>
-            <p id="mensaje"></p>
+        <h1>Visualizador de Productos</h1>
+        
+        <!-- Filtros -->
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Buscar producto...">
+            <select id="familiaFilter">
+                <option value="">Todas las familias</option>
+            </select>
+        </div>
+
+        <!-- Lista de productos -->
+        <div class="products-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Stock</th>
+                        <th>Código de Barras</th>
+                        <th>Precio</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detalles del producto -->
+        <div class="product-details" id="productDetails">
+            <div class="product-info">
+                <h2>Detalles del Producto</h2>
+                <div class="detail-row">
+                    <span class="label">Código:</span>
+                    <span class="value" id="productCode"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Descripción:</span>
+                    <span class="value" id="productDescription"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Stock:</span>
+                    <span class="value" id="productStock"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Códigos de Barras:</span>
+                    <span class="value" id="productBarcodes"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Precio:</span>
+                    <span class="value" id="productPrice"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Última Actualización:</span>
+                    <span class="value" id="productDate"></span>
+                </div>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
