@@ -124,13 +124,11 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 async function apiCall(endpoint, method = 'GET', body = null) {
     try {
         console.log('Llamando a:', endpoint);
-        console.log('Token:', API_TOKEN);
         
         const response = await fetch(endpoint, {
             method: method,
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_TOKEN}`
+                'Content-Type': 'application/json'
             },
             body: body ? JSON.stringify(body) : null
         });
@@ -145,7 +143,67 @@ async function apiCall(endpoint, method = 'GET', body = null) {
                 errorData: errorData
             });
             
-            const errorMessage = errorData?.message || 
+            const errorMessage = errorData?.error || 
+                errorData?.message || 
+                `HTTP error! status: ${response.status} - ${response.statusText}`;
+            
+            updateDiagnostic('apiStatus', 'error', 'Conexión fallida');
+            updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+            updateDiagnostic('lastError', 'error', errorMessage);
+            
+            throw new Error(errorMessage);
+        }
+        
+        const data = await response.json();
+        console.log('Datos recibidos:', data);
+        
+        updateDiagnostic('apiStatus', 'success', 'Conexión exitosa');
+        updateDiagnostic('tokenStatus', 'success', 'Token válido');
+        updateDiagnostic('lastError', 'success', '-');
+        
+        return data;
+    } catch (error) {
+        console.error('Error en la API:', error);
+        
+        // Intentar obtener más detalles del error
+        let errorMessage = error.message;
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            errorMessage = 'No se pudo establecer conexión con el servidor. Verifica tu conexión a internet.';
+        }
+        
+        updateDiagnostic('apiStatus', 'error', 'Error de conexión');
+        updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+        updateDiagnostic('lastError', 'error', errorMessage);
+        
+        throw error;
+    }
+}
+
+// Función para hacer peticiones a la API
+async function apiCall(endpoint, method = 'GET', body = null) {
+    try {
+        console.log('Llamando a:', endpoint);
+        
+        const response = await fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: body ? JSON.stringify(body) : null
+        });
+        
+        console.log('Respuesta:', response);
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            console.error('Error de API:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorData: errorData
+            });
+            
+            const errorMessage = errorData?.error || 
+                errorData?.message || 
                 `HTTP error! status: ${response.status} - ${response.statusText}`;
             
             updateDiagnostic('apiStatus', 'error', 'Conexión fallida');
