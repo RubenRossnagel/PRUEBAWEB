@@ -19,19 +19,23 @@ async function getProducts() {
         // Paso 1: Inicialización
         await updateStep(1, 'Inicializando...');
         
-        // Paso 2: Verificación de token
-        await updateStep(2, 'Verificando token...');
+        // Paso 2: Conectando al proxy
+        await updateStep(2, 'Conectando al proxy...');
         
-        // Paso 3: Carga de datos
-        await updateStep(3, 'Cargando productos...');
+        // Paso 3: Haciendo petición a la API
+        await updateStep(3, 'Haciendo petición a la API...');
         
-        // Usar datos locales
-        const products = LOCAL_DATA.productos;
+        const response = await fetch('proxy.php?endpoint=GetProducto');
+        const data = await response.json();
         
-        // Paso 4: Filtrado
-        await updateStep(4, 'Filtrando datos...');
+        // Paso 4: Procesando respuesta
+        await updateStep(4, 'Procesando respuesta...');
         
-        return products;
+        if (data.error) {
+            throw new Error(data.error + (data.details ? ': ' + data.details : ''));
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error al obtener productos:', error);
         throw error;
@@ -43,19 +47,23 @@ async function getFamilias() {
         // Paso 1: Inicialización
         await updateStep(1, 'Inicializando...');
         
-        // Paso 2: Verificación de token
-        await updateStep(2, 'Verificando token...');
+        // Paso 2: Conectando al proxy
+        await updateStep(2, 'Conectando al proxy...');
         
-        // Paso 3: Carga de datos
-        await updateStep(3, 'Cargando familias...');
+        // Paso 3: Haciendo petición a la API
+        await updateStep(3, 'Haciendo petición a la API...');
         
-        // Usar datos locales
-        const familias = LOCAL_DATA.familias;
+        const response = await fetch('proxy.php?endpoint=GetFamilia');
+        const data = await response.json();
         
-        // Paso 4: Filtrado
-        await updateStep(4, 'Filtrando datos...');
+        // Paso 4: Procesando respuesta
+        await updateStep(4, 'Procesando respuesta...');
         
-        return familias;
+        if (data.error) {
+            throw new Error(data.error + (data.details ? ': ' + data.details : ''));
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error al obtener familias:', error);
         throw error;
