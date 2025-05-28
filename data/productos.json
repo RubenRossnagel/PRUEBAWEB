@@ -1,0 +1,32 @@
+{
+    "productos": [
+        {
+            "codigo": "P001",
+            "descripcionLarga": "Producto de prueba 1",
+            "precio": 100.00,
+            "FamiliaID": 1
+        },
+        {
+            "codigo": "P002",
+            "descripcionLarga": "Producto de prueba 2",
+            "precio": 150.00,
+            "FamiliaID": 2
+        },
+        {
+            "codigo": "P003",
+            "descripcionLarga": "Producto de prueba 3",
+            "precio": 200.00,
+            "FamiliaID": 1
+        }
+    ],
+    "familias": [
+        {
+            "id": 1,
+            "nombre": "Familia 1"
+        },
+        {
+            "id": 2,
+            "nombre": "Familia 2"
+        }
+    ]
+}
