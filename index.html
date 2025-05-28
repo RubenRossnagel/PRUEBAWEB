@@ -51,10 +51,12 @@
         <!-- Panel de diagnóstico -->
         <div class="diagnostic-panel" id="diagnosticPanel">
             <h3>Diagnóstico de la Conexión</h3>
-            <div class="diagnostic-info">
-                <p><strong>Estado de la API:</strong> <span id="apiStatus">Verificando...</span></p>
-                <p><strong>Token:</strong> <span id="tokenStatus">Verificando...</span></span></p>
-                <p><strong>Último Error:</strong> <span id="lastError">-</span></p>
+            <div class="diagnostic-panel">
+                <p><strong>Diagnóstico de la Conexión</strong></p>
+                <p>Estado de la API: <span id="apiStatus" class="status">Conectando con la API...</span></p>
+                <p>Token: <span id="tokenStatus" class="status">Verificando...</span></p>
+                <p>Último Error: <span id="lastError" class="status">-</span></p>
+                <div id="loadingMessage" class="loading-message">Cargando datos...</div>
             </div>
         </div>
 
