@@ -1,6 +1,62 @@
 const API_BASE_URL = 'https://drrsystemas4.azurewebsites.net/Producto';
 const API_TOKEN = 'A2063691-951B-454A-80AE-6839B53F8174.F8E174D2-E996-4ACF-A924-86F13A772775';
 
+// URLs completas de las APIs
+const PRODUCT_API_URL = `${API_BASE_URL}/GetProducto`;
+const FAMILIA_API_URL = `${API_BASE_URL}/GetFamilia`;
+
+// Función para hacer peticiones a la API
+async function apiCall(endpoint, method = 'GET', body = null) {
+    try {
+        const url = `${endpoint}`;
+        console.log('Llamando a:', url);
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_TOKEN}`
+            },
+            body: body ? JSON.stringify(body) : null
+        });
+        
+        console.log('Respuesta recibida:', {
+            status: response.status,
+            statusText: response.statusText
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            const error = errorData?.message || `HTTP error! status: ${response.status}`;
+            console.error('Error detallado:', error);
+            
+            updateDiagnostic('apiStatus', 'error', 'Conexión fallida');
+            updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+            updateDiagnostic('lastError', 'error', error);
+            
+            throw new Error(error);
+        }
+        
+        const data = await response.json();
+        console.log('Datos recibidos:', data);
+        
+        // Actualizar diagnóstico
+        updateDiagnostic('apiStatus', 'success', 'Conexión exitosa');
+        updateDiagnostic('tokenStatus', 'success', 'Token válido');
+        updateDiagnostic('lastError', 'success', '-');
+        
+        return data;
+    } catch (error) {
+        console.error('Error en la API:', error);
+        
+        updateDiagnostic('apiStatus', 'error', 'Error de conexión');
+        updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+        updateDiagnostic('lastError', 'error', error.message);
+        
+        throw error;
+    }
+}
+
 // Función para hacer peticiones a la API
 async function apiCall(endpoint, method = 'GET', body = null) {
     try {
@@ -94,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Verificar conexión inicial
         try {
-            await apiCall('GetFamilia');
+            await apiCall(FAMILIA_API_URL);
             updateStatus('Conexión exitosa', 'success');
         } catch (error) {
             updateStatus('Error de conexión', 'error');
@@ -102,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Cargar familias
-        const familias = await apiCall('GetFamilia');
+        const familias = await apiCall(FAMILIA_API_URL);
         const familiaSelect = document.getElementById('familiaFilter');
         familias.forEach(familia => {
             const option = document.createElement('option');
@@ -133,6 +189,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         showError('Error al cargar la aplicación. Por favor, inténtalo de nuevo.');
     }
 });
+
+// Función para cargar productos
+async function loadProducts() {
+    try {
+        // Mostrar mensaje de carga
+        showLoading(true);
+
+        // Obtener productos
+        const products = await apiCall(PRODUCT_API_URL);
+        
+        // Obtener valores de filtros
+        const searchInput = document.getElementById('searchInput').value.trim();
+        const familiaFilter = document.getElementById('familiaFilter').value;
+        
+        // Filtrar productos
+        const filteredProducts = products.filter(product => {
+            const matchesSearch = product.descripcionLarga.toLowerCase().includes(searchInput.toLowerCase());
+            const matchesFamilia = !familiaFilter || product.FamiliaID === parseInt(familiaFilter);
+            return matchesSearch && matchesFamilia;
+        });
+        
+        // Actualizar tabla
+        const tbody = document.getElementById('productsTableBody');
+        tbody.innerHTML = '';
+        
+        if (filteredProducts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No se encontraron productos</td></tr>';
+        } else {
+            filteredProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.dataset.productid = product.ProductoID;
+                row.innerHTML = `
+                    <td>${product.codigo}</td>
+                    <td>${product.descripcionLarga}</td>
+                    <td>${product.stock}</td>
+                    <td>${product.codigoBarra}</td>
+                    <td>${product.PrecioFormateado}</td>
+                    <td>${new Date(product.fechaModif).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Ocultar mensaje de carga
+        showLoading(false);
+        
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        showError('Error al cargar los productos. Por favor, inténtalo de nuevo.');
+        showLoading(false);
+    }
+}
 
 // Función para mostrar mensaje de carga
 document.head.insertAdjacentHTML('beforeend', `
