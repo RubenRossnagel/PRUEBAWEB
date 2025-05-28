@@ -10,6 +10,14 @@
     <div class="container">
         <h1>Visualizador de Productos</h1>
         
+        <!-- Área de estado -->
+        <div class="status-area">
+            <div class="status-message" id="statusMessage">
+                <span class="status-icon"></span>
+                <span class="status-text">Conectando con la API...</span>
+            </div>
+        </div>
+
         <!-- Filtros -->
         <div class="filters">
             <input type="text" id="searchInput" placeholder="Buscar producto...">
@@ -18,6 +26,9 @@
                 <option value="">Todas las familias</option>
             </select>
         </div>
+
+        <!-- Mensaje de carga -->
+        <div id="loading" style="display: none;"></div>
 
         <!-- Lista de productos -->
         <div class="products-list">
@@ -37,8 +48,15 @@
             </table>
         </div>
 
-        <!-- Mensaje de carga -->
-        <div id="loading" style="display: none;"></div>
+        <!-- Panel de diagnóstico -->
+        <div class="diagnostic-panel" id="diagnosticPanel">
+            <h3>Diagnóstico de la Conexión</h3>
+            <div class="diagnostic-info">
+                <p><strong>Estado de la API:</strong> <span id="apiStatus">Verificando...</span></p>
+                <p><strong>Token:</strong> <span id="tokenStatus">Verificando...</span></span></p>
+                <p><strong>Último Error:</strong> <span id="lastError">-</span></p>
+            </div>
+        </div>
 
         <!-- Detalles del producto -->
         <div class="product-details" id="productDetails">

@@ -19,6 +19,71 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Área de estado */
+.status-area {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.status-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-icon.success {
+    background-color: #28a745;
+}
+
+.status-icon.error {
+    background-color: #dc3545;
+}
+
+.status-icon.warning {
+    background-color: #ffc107;
+}
+
+.status-icon.loading {
+    border: 2px solid #1a73e8;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Panel de diagnóstico */
+.diagnostic-panel {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    display: none;
+}
+
+.diagnostic-panel.show {
+    display: block;
+}
+
+.diagnostic-info {
+    margin-top: 1rem;
+}
+
+.diagnostic-info p {
+    margin: 0.5rem 0;
+}
+
+.diagnostic-info strong {
+    color: #1a73e8;
+}
+
 h1 {
     color: #1a73e8;
     text-align: center;

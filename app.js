@@ -4,7 +4,10 @@ const API_TOKEN = 'A2063691-951B-454A-80AE-6839B53F8174.F8E174D2-E996-4ACF-A924-
 // Función para hacer peticiones a la API
 async function apiCall(endpoint, method = 'GET', body = null) {
     try {
-        const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        const url = `${API_BASE_URL}/${endpoint}`;
+        console.log('Llamando a:', url);
+        
+        const response = await fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -13,17 +16,123 @@ async function apiCall(endpoint, method = 'GET', body = null) {
             body: body ? JSON.stringify(body) : null
         });
         
+        console.log('Respuesta recibida:', {
+            status: response.status,
+            statusText: response.statusText
+        });
+        
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+            const error = errorData?.message || `HTTP error! status: ${response.status}`;
+            console.error('Error detallado:', error);
+            
+            // Actualizar diagnóstico
+            updateDiagnostic('apiStatus', 'error', 'Conexión fallida');
+            updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+            updateDiagnostic('lastError', 'error', error);
+            
+            throw new Error(error);
         }
         
-        return await response.json();
+        const data = await response.json();
+        console.log('Datos recibidos:', data);
+        
+        // Actualizar diagnóstico
+        updateDiagnostic('apiStatus', 'success', 'Conexión exitosa');
+        updateDiagnostic('tokenStatus', 'success', 'Token válido');
+        updateDiagnostic('lastError', 'success', '-');
+        
+        return data;
     } catch (error) {
         console.error('Error en la API:', error);
+        
+        // Actualizar diagnóstico
+        updateDiagnostic('apiStatus', 'error', 'Error de conexión');
+        updateDiagnostic('tokenStatus', 'error', 'Token no válido');
+        updateDiagnostic('lastError', 'error', error.message);
+        
         throw error;
     }
 }
+
+// Función para actualizar el diagnóstico
+function updateDiagnostic(elementId, statusType, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+        
+        // Mostrar el panel de diagnóstico si hay un error
+        if (statusType === 'error') {
+            document.getElementById('diagnosticPanel').classList.add('show');
+        } else {
+            // Ocultar el panel si no hay errores
+            const hasErrors = document.querySelectorAll('.diagnostic-info span.error').length > 0;
+            if (!hasErrors) {
+                document.getElementById('diagnosticPanel').classList.remove('show');
+            }
+        }
+    }
+}
+
+// Función para actualizar el estado
+function updateStatus(message, statusType = 'loading') {
+    const statusMessage = document.getElementById('statusMessage');
+    const statusIcon = statusMessage.querySelector('.status-icon');
+    const statusText = statusMessage.querySelector('.status-text');
+    
+    if (statusIcon && statusText) {
+        statusIcon.className = 'status-icon';
+        statusIcon.classList.add(statusType);
+        statusText.textContent = message;
+    }
+}
+
+// Función para actualizar la tabla de productos
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        updateStatus('Conectando con la API...', 'loading');
+        
+        // Verificar conexión inicial
+        try {
+            await apiCall('GetFamilia');
+            updateStatus('Conexión exitosa', 'success');
+        } catch (error) {
+            updateStatus('Error de conexión', 'error');
+            throw error;
+        }
+
+        // Cargar familias
+        const familias = await apiCall('GetFamilia');
+        const familiaSelect = document.getElementById('familiaFilter');
+        familias.forEach(familia => {
+            const option = document.createElement('option');
+            option.value = familia.FamiliaID;
+            option.textContent = familia.Nombre;
+            familiaSelect.appendChild(option);
+        });
+
+        // Event listeners
+        document.getElementById('searchButton').addEventListener('click', loadProducts);
+        document.getElementById('searchInput').addEventListener('input', debounce(loadProducts, 300));
+        document.getElementById('familiaFilter').addEventListener('change', loadProducts);
+
+        // Event listener para mostrar detalles
+        document.getElementById('productsTableBody').addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if (row && row.dataset.productid) {
+                showProductDetails(row.dataset.productid);
+            }
+        });
+
+        // Cargar productos por primera vez
+        await loadProducts();
+
+    } catch (error) {
+        console.error('Error al cargar la aplicación:', error);
+        updateStatus('Error al cargar la aplicación', 'error');
+        showError('Error al cargar la aplicación. Por favor, inténtalo de nuevo.');
+    }
+});
 
 // Función para mostrar mensaje de carga
 document.head.insertAdjacentHTML('beforeend', `
